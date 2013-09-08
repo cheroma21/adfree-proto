@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  div
+    span#mps
+    |&nbsp;messages per second
+  div
+    span#clients
+    |&nbsp;clients connected
+
+  script.
+    var socket = io.connect();
+
+    socket.on('mps', function(mps) {
+      $('#mps').text(mps);
+    });
+
+    socket.on('clients', function(clients) {
+      $('#clients').text(clients);
+    });

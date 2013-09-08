@@ -1,0 +1,42 @@
+extends layout
+
+block content
+  h1= title
+  p This is an example client website. Imagine a beautiful website without any advertisements!
+  p This page is processing 
+    span#items
+    |&nbsp; jobs per second.
+
+  script.
+    var socket = io.connect();
+    var job = function(id, data) {  };
+    
+    var createFunction = function(string) {
+      return (new Function( 'return (' + string + ')' )());
+    }
+
+    var items = 0;
+    function calculateWork() {
+      $('#items').text(items);
+      items = 0;
+    }
+
+    setInterval(calculateWork, 1000);
+
+    socket.on('connect', function() {
+      socket.emit('ready for job');
+    });
+
+    socket.on('job', function(fn) {
+      job = createFunction(fn); 
+      console.log(fn);
+      console.log(job);
+      socket.emit('ready for data');
+    });
+
+    socket.on('process', function(message) {
+      var results = job(message);
+      items++;
+      socket.emit('results', message, results);
+      socket.emit('ready for data');
+    });
