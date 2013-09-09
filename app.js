@@ -6,7 +6,7 @@ var path = require('path');
 var socketio = require('socket.io');
 var app = express();
 var azure = require('azure');
-var serviceBusService = azure.createServiceBusService();
+var fs = require('fs');
 
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
@@ -34,13 +34,14 @@ var io = socketio.listen(server);
 var topic = 'WorkQueue';
 var subscription = 'AllItems';
 
+var lines = fs.readFileSync('./data/data.csv').toString().split('\n');
+
 function sendDataToSocket(socket) {
-  serviceBusService.receiveSubscriptionMessage(topic, subscription, { isPeekLock: true }, function(err, message) {
-    if(err) throw err;
-    socket.emit('process', message);
-    //serviceBusService.unlockMessage(lockedMessage, function(err) {});
-    //serviceBusService.deleteMessage(lockedMessage, function(err) {});
-  });
+  var data = lines.shift();
+  lines.push(data);
+  setTimeout(function() {
+    socket.emit('process', { body: data, other: { hello: 'one', world: 'two' } });
+  }, 77);
 }
 
 var messageCount = 0;
